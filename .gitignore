@@ -15,6 +15,7 @@
 appsettings.Local.json
 appsettings.*.Local.json
 .env
+!.env.example
 
 # Logs
 Logs/
