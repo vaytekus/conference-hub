@@ -1,4 +1,10 @@
+using ConferenceHub.Application.Interfaces;
+using ConferenceHub.Application.Options;
+using ConferenceHub.Domain.Entities;
 using ConferenceHub.Infrastructure.Data;
+using ConferenceHub.Infrastructure.Repositories;
+using ConferenceHub.Infrastructure.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,6 +24,19 @@ public static class ServiceCollectionExtensions
             options.UseNpgsql(
             connectionString,
             npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
+
+        services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+        services.AddIdentityCore<AppUser>()
+            .AddRoles<IdentityRole<Guid>>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+
+        services.Configure<IdentityOptions>(configuration.GetSection("Identity"));
+        services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
+
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
     }
