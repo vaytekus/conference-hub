@@ -16,6 +16,7 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
     public DbSet<RoomService> RoomServices => Set<RoomService>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<ReservationService> ReservationServices => Set<ReservationService>();
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

@@ -21,4 +21,18 @@ public class AuthController(IAuthService auth) : ControllerBase
         var response = await auth.LoginAsync(dto, ct);
         return response is null ? Unauthorized() : Ok(response);
     }
+
+    [HttpPost("refresh")]
+    public async Task<ActionResult<AuthResponseDto>> RefreshAsync(RefreshRequestDto dto, CancellationToken ct)
+    {
+        var response = await auth.RefreshAsync(dto.RefreshToken, ct);
+        return response is null ? Unauthorized() : Ok(response);
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout(RefreshRequestDto dto, CancellationToken ct)
+    {
+        await auth.LogoutAsync(dto.RefreshToken, ct);
+        return NoContent();
+    }
 }

@@ -14,6 +14,11 @@ using SharpGrip.FluentValidation.AutoValidation.Mvc.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddRouting(options => {
+    options.LowercaseUrls = true;
+    options.LowercaseQueryStrings = true;
+});
+
 builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 

@@ -36,6 +36,9 @@ public static class ServiceCollectionExtensions
         services.Configure<IdentityOptions>(configuration.GetSection("Identity"));
         services.Configure<JwtSettings>(configuration.GetSection(JwtSettings.SectionName));
 
+        services.Configure<RefreshTokenSettings>(configuration.GetSection(RefreshTokenSettings.SectionName));
+        services.AddScoped<IRefreshTokenGenerator, RefreshTokenGenerator>();
+
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
