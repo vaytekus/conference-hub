@@ -12,6 +12,9 @@ public static class ServiceCollectionExtensions
     {
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<IBookingService, BookingService>();
+
+        services.AddSingleton<IPricingCalculator, PricingCalculator>();
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
