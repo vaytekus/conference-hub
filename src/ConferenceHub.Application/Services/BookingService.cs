@@ -14,17 +14,18 @@ public class BookingService(
     IRepository<Room> roomRepo,
     IRepository<Service> serviceRepo,
     IUnitOfWork uow,
-    IPricingCalculator pricingCalculator) : IBookingService
+    IPricingCalculator pricingCalculator,
+    ICurrentUser currentUser) : IBookingService
 {
     private const int MaxAttempts = 3;
 
-    public async Task<ReservationDto> CreateAsync(Guid userId, CreateReservationDto dto, CancellationToken ct = default)
+    public async Task<ReservationDto> CreateAsync(CreateReservationDto dto, CancellationToken ct = default)
     {
         for (var attempt = 1; ; attempt++)
         {
             try
             {
-                return await CreateReservationCoreAsync(userId, dto, ct);
+                return await CreateReservationCoreAsync(dto, ct);
             }
             catch (Exception ex) when (IsSerializationFailure(ex) && attempt < MaxAttempts)
             {
@@ -33,11 +34,11 @@ public class BookingService(
         }
     }
 
-    public async Task<IReadOnlyList<ReservationDto>> GetMyReservationsAsync(Guid userId, CancellationToken ct = default)
+    public async Task<IReadOnlyList<ReservationDto>> GetMyReservationsAsync(CancellationToken ct = default)
     {
         var reservations = await reservationRepo.Query()
             .AsNoTracking()
-            .Where(r => r.UserId == userId)
+            .Where(r => r.UserId == currentUser.Id)
             .Include(r => r.Room)
             .Include(r => r.ReservationServices)
             .ThenInclude(rs => rs.Service)
@@ -72,7 +73,6 @@ public class BookingService(
     };
 
     private async Task<ReservationDto> CreateReservationCoreAsync(
-        Guid userId,
         CreateReservationDto dto,
         CancellationToken ct = default)
     {
@@ -114,7 +114,7 @@ public class BookingService(
         var reservation = new Reservation
         {
             RoomId = dto.RoomId,
-            UserId = userId,
+            UserId = currentUser.Id,
             StartTime = dto.StartTime,
             EndTime = dto.EndTime,
             TotalPrice = totalPrice,

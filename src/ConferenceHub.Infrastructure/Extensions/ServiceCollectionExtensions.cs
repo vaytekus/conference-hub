@@ -25,12 +25,16 @@ public static class ServiceCollectionExtensions
             connectionString,
             npgsql => npgsql.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
+        services.AddHttpContextAccessor();
+
+        services.AddScoped<ICurrentUser, CurrentUser>();
         services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddIdentityCore<AppUser>()
             .AddRoles<IdentityRole<Guid>>()
             .AddEntityFrameworkStores<AppDbContext>()
+            .AddSignInManager()
             .AddDefaultTokenProviders();
 
         services.Configure<IdentityOptions>(configuration.GetSection("Identity"));

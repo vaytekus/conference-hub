@@ -1,0 +1,61 @@
+@model RoomDetailsDto
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="mb-3">
+    <a asp-action="Index" class="btn btn-sm btn-outline-secondary">&larr; Back to rooms</a>
+</div>
+
+<h1>@Model.Name</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Capacity</dt>
+    <dd class="col-sm-9">@Model.Capacity people</dd>
+
+    <dt class="col-sm-3">Price per hour</dt>
+    <dd class="col-sm-9">@Model.PricePerHour.ToString("C")</dd>
+</dl>
+
+<h3 class="mt-4">Available Services</h3>
+
+@if (Model.Services.Count == 0)
+{
+    <p class="text-muted">No additional services available for this room.</p>
+}
+else
+{
+    <table class="table table-sm table-bordered">
+        <thead>
+        <tr>
+            <th>Service</th>
+            <th class="text-end">Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var service in Model.Services)
+        {
+            <tr>
+                <td>@service.Name</td>
+                <td class="text-end">@service.Price.ToString("C")</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
+
+<div class="mt-4">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <a asp-controller="Reservations" asp-action="Create" asp-route-roomId="@Model.Id" class="btn btn-primary">
+            Book this room
+        </a>
+    }
+    else
+    {
+        <div class="alert alert-warning">
+            <a asp-controller="Account" asp-action="Login">Sign in</a> to book this room.
+        </div>
+    }
+</div>

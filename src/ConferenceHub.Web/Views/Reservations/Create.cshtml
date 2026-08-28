@@ -1,0 +1,71 @@
+@model BookReservationViewModel
+
+@{
+    ViewData["Title"] = $"Book {Model.RoomName}";
+}
+
+<div class="mb-3">
+    <a asp-controller="Rooms" asp-action="Details" asp-route-id="@Model.RoomId"
+       class="btn btn-sm btn-outline-secondary">&larr; Back to room</a>
+</div>
+
+<h1>Book: @Model.RoomName</h1>
+
+<div class="alert alert-secondary mb-4">
+    <strong>Capacity:</strong> @Model.Capacity people &nbsp;|&nbsp;
+    <strong>Price per hour:</strong> @Model.PricePerHour.ToString("C")
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+            <input asp-for="RoomId" type="hidden"/>
+
+            <div class="form-group mb-3">
+                <label asp-for="StartTime" class="form-label"></label>
+                <input asp-for="StartTime" type="datetime-local" class="form-control"/>
+                <small class="form-text text-muted">Whole hours only (e.g. 14:00).</small>
+                <span asp-validation-for="StartTime" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="EndTime" class="form-label"></label>
+                <input asp-for="EndTime" type="datetime-local" class="form-control"/>
+                <small class="form-text text-muted">Whole hours only (e.g. 14:00).</small>
+                <span asp-validation-for="EndTime" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label class="form-label">Additional Services</label>
+                @if (Model.AvailableServices.Count == 0)
+                {
+                    <p class="text-muted small">No additional services available for this room.</p>
+                }
+                else
+                {
+                    @foreach (var service in Model.AvailableServices)
+                    {
+                        var isChecked = Model.SelectedServiceIds.Contains(service.Id);
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox"
+                                   name="SelectedServiceIds" value="@service.Id"
+                                   id="svc-@service.Id"
+                                   @(isChecked ? "checked" : "")/>
+                            <label class="form-check-label" for="svc-@service.Id">
+                                @service.Name — @service.Price.ToString("C")
+                            </label>
+                        </div>
+                    }
+                }
+            </div>
+
+            <button type="submit" class="btn btn-primary">Book</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

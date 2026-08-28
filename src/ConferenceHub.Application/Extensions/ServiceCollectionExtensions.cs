@@ -13,6 +13,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRoomService, RoomService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IBookingService, BookingService>();
+        services.AddScoped<ICatalogService, CatalogService>();
 
         services.AddSingleton<IPricingCalculator, PricingCalculator>();
 
