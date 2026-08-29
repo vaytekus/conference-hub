@@ -1,0 +1,46 @@
+@using ConferenceHub.Application.DTOs.Services
+@model IReadOnlyList<ServiceDto>
+
+@{
+    ViewData["Title"] = "Manage Services";
+}
+
+<h1>Manage Services</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">+ Create Service</a>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No services yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Price</th>
+            <th style="width: 200px;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var service in Model)
+        {
+            <tr>
+                <td>@service.Name</td>
+                <td>@service.Price.ToString("F2")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@service.Id" class="btn btn-sm btn-secondary">Edit</a>
+
+                    <form asp-action="Delete" asp-route-id="@service.Id" method="post" style="display:inline;"
+                          onsubmit="return confirm('Delete service @service.Name?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

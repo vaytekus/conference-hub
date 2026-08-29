@@ -25,15 +25,33 @@
 
             <div class="form-group mb-3">
                 <label asp-for="StartTime" class="form-label"></label>
-                <input asp-for="StartTime" type="datetime-local" class="form-control"/>
-                <small class="form-text text-muted">Whole hours only (e.g. 14:00).</small>
+                <div class="input-group" data-datetime-picker>
+                    <input type="date" class="form-control"/>
+                    <select class="form-select" style="max-width: 110px;">
+                        <option value="">Hour</option>
+                        @for (var h = 6; h <= 22; h++)
+                        {
+                            <option value="@h">@($"{h:00}:00")</option>
+                        }
+                    </select>
+                    <input asp-for="StartTime" type="hidden"/>
+                </div>
                 <span asp-validation-for="StartTime" class="text-danger"></span>
             </div>
 
             <div class="form-group mb-3">
                 <label asp-for="EndTime" class="form-label"></label>
-                <input asp-for="EndTime" type="datetime-local" class="form-control"/>
-                <small class="form-text text-muted">Whole hours only (e.g. 14:00).</small>
+                <div class="input-group" data-datetime-picker>
+                    <input type="date" class="form-control"/>
+                    <select class="form-select" style="max-width: 110px;">
+                        <option value="">Hour</option>
+                        @for (var h = 7; h <= 23; h++)
+                        {
+                            <option value="@h">@($"{h:00}:00")</option>
+                        }
+                    </select>
+                    <input asp-for="EndTime" type="hidden"/>
+                </div>
                 <span asp-validation-for="EndTime" class="text-danger"></span>
             </div>
 
@@ -64,8 +82,37 @@
             <button type="submit" class="btn btn-primary">Book</button>
         </form>
     </div>
+
+    <div class="col-md-4">
+        <div id="preview-panel"
+             class="card sticky-top"
+             style="top: 1rem;"
+             data-preview-url="@Url.Action("Preview", "Reservations")">
+            <div class="card-body">
+                <h5 class="card-title">Estimated Total</h5>
+                <dl class="row mb-2">
+                    <dt class="col-6 text-muted small">Hours:</dt>
+                    <dd class="col-6 text-end small" id="preview-hours">—</dd>
+
+                    <dt class="col-6 text-muted small">Room:</dt>
+                    <dd class="col-6 text-end small" id="preview-room">—</dd>
+
+                    <dt class="col-6 text-muted small">Services:</dt>
+                    <dd class="col-6 text-end small" id="preview-services">—</dd>
+                </dl>
+                <hr class="my-2"/>
+                <div class="d-flex justify-content-between">
+                    <strong>Total:</strong>
+                    <strong id="preview-total" class="text-primary">—</strong>
+                </div>
+                <div id="preview-error" class="text-danger small mt-2"></div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/datetime-picker.js" asp-append-version="true"></script>
+    <script src="~/js/reservation-preview.js" asp-append-version="true"></script>
 }

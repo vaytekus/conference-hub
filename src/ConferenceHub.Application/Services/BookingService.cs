@@ -61,6 +61,39 @@ public class BookingService(
         return reservations.Select(r => r.ToDto()).ToList();
     }
 
+    public async Task<ReservationPricePreviewDto> PreviewPriceAsync(
+        PreviewReservationDto dto,
+        CancellationToken ct = default)
+    {
+        var room = await roomRepo.GetByIdAsync(dto.RoomId, ct);
+        if (room is null)
+        {
+            throw new NotFoundException($"Room {dto.RoomId} not found");
+        }
+
+        var services = await serviceRepo.Query()
+            .AsNoTracking()
+            .Where(s => dto.ServiceIds.Contains(s.Id))
+            .ToListAsync(ct);
+
+        if (services.Count != dto.ServiceIds.Count)
+        {
+            throw new NotFoundException("One or more services not found");
+        }
+
+        var billableHours = pricingCalculator.CountBillableHours(dto.StartTime, dto.EndTime);
+        var roomTotal = pricingCalculator.Calculate(
+            room.PricePerHour,
+            dto.StartTime,
+            dto.EndTime,
+            Array.Empty<decimal>());
+
+        var serviceTotal = services.Sum(s => s.Price);
+        var grandTotal = roomTotal + serviceTotal;
+
+        return new ReservationPricePreviewDto(billableHours, roomTotal, serviceTotal, grandTotal);
+    }
+
     private static bool IsSerializationFailure(Exception ex) => ex switch
     {
         PostgresException pg

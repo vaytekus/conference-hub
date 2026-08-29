@@ -82,18 +82,82 @@ public class PricingCalculatorTests
     [InlineData(0)]
     [InlineData(3)]
     [InlineData(5)]
-    public void Calculate_NightHours_Throws(int nightHours)
+    public void Calculate_NightHours_ReturnsZero(int nightHour)
     {
-        var act = () => _sut.Calculate(PricePerHour, At(nightHours), At(nightHours + 1), []);
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        var result = _sut.Calculate(PricePerHour, At(nightHour), At(nightHour + 1), []);
+        result.Should().Be(0m);
     }
 
     [Fact]
-    public void Calculate_TwentyThree_Throws()
+    public void Calculate_TwentyThreeToMidnight_ReturnsZero()
     {
         var start = new DateTime(2026, 1, 1, 23, 0, 0);
         var end = new DateTime(2026, 1, 2, 0, 0, 0);
-        var act = () => _sut.Calculate(PricePerHour, start, end, []);
-        act.Should().Throw<ArgumentOutOfRangeException>();
+        var result = _sut.Calculate(PricePerHour, start, end, []);
+        result.Should().Be(0m);
+    }
+
+    [Fact]
+    public void Calculate_MultiDay_SkipsNighttime()
+    {
+        // day1 20:00 → day2 09:00: 3×Evening (20,21,22) + 3×Morning (6,7,8) = 800×3 + 900×3 = 5100
+        var start = new DateTime(2026, 1, 1, 20, 0, 0);
+        var end = new DateTime(2026, 1, 2, 9, 0, 0);
+        var result = _sut.Calculate(PricePerHour, start, end, []);
+        result.Should().Be(5100m);
+    }
+
+    // CountBillableHours
+    [Fact]
+    public void CountBillableHours_SameDay_ReturnsWholeRange()
+    {
+        _sut.CountBillableHours(At(9), At(12)).Should().Be(3);
+    }
+
+    [Fact]
+    public void CountBillableHours_FullOperatingDay_Returns17()
+    {
+        _sut.CountBillableHours(At(6), At(23)).Should().Be(17);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(3)]
+    [InlineData(5)]
+    public void CountBillableHours_NightHour_ReturnsZero(int nightHour)
+    {
+        _sut.CountBillableHours(At(nightHour), At(nightHour + 1)).Should().Be(0);
+    }
+
+    [Fact]
+    public void CountBillableHours_TwentyThreeToMidnight_ReturnsZero()
+    {
+        var start = new DateTime(2026, 1, 1, 23, 0, 0);
+        var end = new DateTime(2026, 1, 2, 0, 0, 0);
+        _sut.CountBillableHours(start, end).Should().Be(0);
+    }
+
+    [Fact]
+    public void CountBillableHours_MultiDay_SkipsNighttime()
+    {
+        // day1 20:00 → day2 09:00: 3 (20,21,22) + 3 (6,7,8) = 6, ніч 23-05 пропущена
+        var start = new DateTime(2026, 1, 1, 20, 0, 0);
+        var end = new DateTime(2026, 1, 2, 9, 0, 0);
+        _sut.CountBillableHours(start, end).Should().Be(6);
+    }
+
+    [Fact]
+    public void CountBillableHours_EndBeforeStart_Throws()
+    {
+        var act = () => _sut.CountBillableHours(At(14), At(10));
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void CountBillableHours_PartialHour_Throws()
+    {
+        var start = new DateTime(2026, 1, 1, 10, 30, 0);
+        var act = () => _sut.CountBillableHours(start, At(12));
+        act.Should().Throw<ArgumentException>();
     }
 }

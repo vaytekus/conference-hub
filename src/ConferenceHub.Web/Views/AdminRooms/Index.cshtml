@@ -1,0 +1,48 @@
+@using ConferenceHub.Application.DTOs.Rooms
+@model IReadOnlyList<RoomDto>
+
+@{
+    ViewData["Title"] = "Manage Rooms";
+}
+
+<h1>Manage Rooms</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">+ Create Room</a>
+</p>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">No rooms yet.</div>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Capacity</th>
+            <th>Price / hour</th>
+            <th style="width: 200px;">Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var room in Model)
+        {
+            <tr>
+                <td>@room.Name</td>
+                <td>@room.Capacity</td>
+                <td>@room.PricePerHour.ToString("F2")</td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@room.Id" class="btn btn-sm btn-secondary">Edit</a>
+
+                    <form asp-action="Delete" asp-route-id="@room.Id" method="post" style="display:inline;"
+                          onsubmit="return confirm('Delete room @room.Name?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

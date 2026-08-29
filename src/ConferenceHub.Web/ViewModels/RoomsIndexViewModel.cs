@@ -24,8 +24,8 @@ public class RoomsIndexViewModel : IValidatableObject
         if (StartTime.HasValue != EndTime.HasValue)
         {
             yield return new ValidationResult(
-            "Both From and To must be provided..",
-            [nameof(StartTime), nameof(EndTime)]);
+            "Both From and To must be provided.",
+            [nameof(EndTime)]);
         }
 
         if (StartTime.HasValue && EndTime.HasValue && EndTime <= StartTime)

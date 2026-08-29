@@ -50,7 +50,7 @@ else
                     }
                 </td>
                 <td class="text-end"><strong>@res.TotalPrice.ToString("C")</strong></td>
-                <td>@res.CreatedAt.ToString("g")</td>
+                <td>@res.CreatedAt.ToLocalTime().ToString("g")</td>
             </tr>
         }
         </tbody>

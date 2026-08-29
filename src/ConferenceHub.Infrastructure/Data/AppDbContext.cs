@@ -27,8 +27,10 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 
     private static void ApplyUtcDateTimeConverter(ModelBuilder modelBuilder)
     {
+        // Треба обробляти Unspecified окремо — .ToUniversalTime() вважає Unspecified як Local
+        // і зміщує час на TZ сервера. Ми ж трактуємо всі вхідні DateTime як UTC (single-region design).
         var utcConverter = new ValueConverter<DateTime, DateTime>(
-            toDb => toDb.ToUniversalTime(),
+            toDb => toDb.Kind == DateTimeKind.Local ? toDb.ToUniversalTime() : DateTime.SpecifyKind(toDb, DateTimeKind.Utc),
             fromDb => DateTime.SpecifyKind(fromDb, DateTimeKind.Utc));
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())

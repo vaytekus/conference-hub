@@ -7,4 +7,6 @@ public interface IPricingCalculator
         DateTime startTime,
         DateTime endTime,
         IEnumerable<decimal> servicePrices);
+
+    int CountBillableHours(DateTime startTime, DateTime endTime);
 }

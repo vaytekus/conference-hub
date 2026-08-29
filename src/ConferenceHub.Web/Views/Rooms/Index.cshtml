@@ -4,26 +4,50 @@
     ViewData["Title"] = "Rooms";
 }
 
-<h1 class="mb-6">Conference Rooms</h1>
+<h1 class="mb-4">Conference Rooms</h1>
 
-<form method="get" class="row g-3 mb-4 p-3 border rounded bg-light">
-    <div class="col-md-2">
-        <label asp-for="MinCapacity" class="form-label"></label>
-        <input asp-for="MinCapacity" class="form-control" type="number" min="1" />
-        <span asp-validation-for="MinCapacity" class="text-danger"></span>
+<form method="get" class="mb-4 p-3 border rounded bg-light">
+    <div class="row gx-3 mb-3">
+        <div class="col-md-2">
+            <label asp-for="MinCapacity" class="form-label"></label>
+            <input asp-for="MinCapacity" class="form-control" type="number" min="1" />
+            <span asp-validation-for="MinCapacity" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-5">
+            <label asp-for="StartTime" class="form-label"></label>
+            <div class="input-group" data-datetime-picker>
+                <input type="date" class="form-control"/>
+                <select class="form-select" style="max-width: 110px;">
+                    <option value="">Hour</option>
+                    @for (var h = 6; h <= 22; h++)
+                    {
+                        <option value="@h">@($"{h:00}:00")</option>
+                    }
+                </select>
+                <input asp-for="StartTime" type="hidden"/>
+            </div>
+            <span asp-validation-for="StartTime" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-5">
+            <label asp-for="EndTime" class="form-label"></label>
+            <div class="input-group" data-datetime-picker>
+                <input type="date" class="form-control"/>
+                <select class="form-select" style="max-width: 110px;">
+                    <option value="">Hour</option>
+                    @for (var h = 7; h <= 23; h++)
+                    {
+                        <option value="@h">@($"{h:00}:00")</option>
+                    }
+                </select>
+                <input asp-for="EndTime" type="hidden"/>
+            </div>
+            <span asp-validation-for="EndTime" class="text-danger"></span>
+        </div>
     </div>
 
-    <div class="col-md-3">
-        <label asp-for="StartTime" class="form-label"></label>
-        <input asp-for="StartTime" class="form-control" type="datetime-local" />
-    </div>
-
-    <div class="col-md-3">
-        <label asp-for="EndTime" class="form-label"></label>
-        <input asp-for="EndTime" class="form-control" type="datetime-local" />
-    </div>
-
-    <div class="col-md-4 d-flex align-items-end gap-2">
+    <div class="d-flex gap-2">
         <button type="submit" class="btn btn-primary">Search</button>
         <a asp-action="Index" class="btn btn-outline-secondary">Reset</a>
     </div>
@@ -62,4 +86,9 @@ else
         }
         </tbody>
     </table>
+}
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/datetime-picker.js" asp-append-version="true"></script>
 }

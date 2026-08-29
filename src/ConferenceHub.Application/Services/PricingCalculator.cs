@@ -5,6 +5,9 @@ namespace ConferenceHub.Application.Services;
 
 public class PricingCalculator : IPricingCalculator
 {
+    private const int OpeningHour = 6;
+    private const int ClosingHour = 23;
+
     public decimal Calculate(
         decimal pricePerHour,
         DateTime startTime,
@@ -14,14 +17,16 @@ public class PricingCalculator : IPricingCalculator
         EnsureValidRange(startTime, endTime);
         EnsureWholeHour(startTime, endTime);
 
-        var roomTotal = 0m;
-        for (var cursor = startTime; cursor < endTime; cursor = cursor.AddHours(1))
-        {
-            var band = ResolveBand(cursor.Hour);
-            roomTotal += pricePerHour * band.GetModifier();
-        }
+        var roomTotal = EnumerateBillableHours(startTime, endTime)
+            .Sum(hour => pricePerHour * ResolveBand(hour).GetModifier());
 
         return roomTotal + servicePrices.Sum();
+    }
+    public int CountBillableHours(DateTime startTime, DateTime endTime)
+    {
+        EnsureValidRange(startTime, endTime);
+        EnsureWholeHour(startTime, endTime);
+        return EnumerateBillableHours(startTime, endTime).Count();
     }
 
     private static PricingBand ResolveBand(int hourOfDay) => hourOfDay switch
@@ -52,5 +57,14 @@ public class PricingCalculator : IPricingCalculator
     private static bool IsWholeHour(DateTime dateTime)
     {
         return dateTime.Minute == 0 && dateTime.Second == 0 && dateTime.Millisecond == 0;
+    }
+
+    private static IEnumerable<int> EnumerateBillableHours(DateTime start, DateTime end)
+    {
+        for (var cursor = start; cursor < end; cursor = cursor.AddHours(1))
+        {
+            if (cursor.Hour < OpeningHour || cursor.Hour >= ClosingHour) continue;
+           yield return cursor.Hour;
+        }
     }
 }

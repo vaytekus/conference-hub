@@ -3,18 +3,17 @@ using FluentValidation;
 
 namespace ConferenceHub.Application.Validators.Reservations;
 
-public class CreateReservationDtoValidator : AbstractValidator<CreateReservationDto>
+public class PreviewReservationDtoValidator : AbstractValidator<PreviewReservationDto>
 {
     private const int OpeningHour = 6;
     private const int ClosingHour = 23;
 
-    public CreateReservationDtoValidator()
+    public PreviewReservationDtoValidator()
     {
         RuleFor(x => x.RoomId)
             .NotEmpty().WithMessage("RoomId is required");
 
         RuleFor(x => x.StartTime)
-            .Must(BeInFuture).WithMessage("StartTime must be in the future.")
             .Must(BeWholeHour).WithMessage("StartTime must be a whole hour (no minutes/seconds).")
             .Must(BeWithinOperatingHours).WithMessage($"StartTime must be between {OpeningHour:00}:00 and {ClosingHour - 1:00}:00.");
 
@@ -34,12 +33,8 @@ public class CreateReservationDtoValidator : AbstractValidator<CreateReservation
             .When(x => x.ServiceIds is not null);
     }
 
-    // helpers
     private static bool BeWholeHour(DateTime time)
         => time.Minute == 0 && time.Second == 0 && time.Millisecond == 0;
-
-    private static bool BeInFuture(DateTime time)
-        => time > DateTime.UtcNow;
 
     private static bool BeWithinOperatingHours(DateTime startTime)
         => startTime.Hour >= OpeningHour && startTime.Hour < ClosingHour;

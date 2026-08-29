@@ -2,6 +2,7 @@ using ConferenceHub.Application.DTOs.Reservations;
 using ConferenceHub.Application.Exceptions;
 using ConferenceHub.Application.Interfaces;
 using ConferenceHub.Web.ViewModels;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -10,7 +11,8 @@ namespace ConferenceHub.Web.Controllers;
 [Authorize]
 public class ReservationsController(
     IRoomService roomService,
-    IBookingService bookingService) : Controller
+    IBookingService bookingService,
+    IValidator<PreviewReservationDto> previewValidator) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Create(Guid roomId, CancellationToken ct)
@@ -67,6 +69,28 @@ public class ReservationsController(
     {
         var reservation = await bookingService.GetMyReservationsAsync(ct);
         return View(reservation);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Preview(
+        [FromBody] PreviewReservationDto dto,
+        CancellationToken ct)
+    {
+        var validation = await previewValidator.ValidateAsync(dto, ct);
+        if (!validation.IsValid)
+        {
+            return BadRequest(new {errors = validation.Errors.Select(x => x.ErrorMessage)});
+        }
+
+        try
+        {
+            var price = await bookingService.PreviewPriceAsync(dto, ct);
+            return Json(price);
+        }
+        catch (NotFoundException ex)
+        {
+            return NotFound(new {error = ex.Message});
+        }
     }
 
     private async Task RepopulateAsync(BookReservationViewModel model, CancellationToken ct)

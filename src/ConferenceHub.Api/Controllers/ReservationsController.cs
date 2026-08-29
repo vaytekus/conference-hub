@@ -17,6 +17,13 @@ public class ReservationsController(IBookingService bookings) : ControllerBase
         return StatusCode(StatusCodes.Status201Created, created);
     }
 
+    [HttpPost("total-price")]
+    public async Task<ActionResult<ReservationPricePreviewDto>> Preview(
+        PreviewReservationDto dto, CancellationToken ct)
+    {
+        return Ok(await bookings.PreviewPriceAsync(dto, ct));
+    }
+
     [HttpGet("mine")]
     public async Task<ActionResult<IReadOnlyList<ReservationDto>>> GetMine(CancellationToken ct)
     {
