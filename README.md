@@ -192,7 +192,6 @@ Coverage focuses on business-critical paths:
 
 ## Known Limitations / Backlog
 
-- **Timezone handling** — system timezone is fixed to one configured value (`SystemTimeZoneId`). Adequate for a single-location deployment; a multi-region system would need per-user timezone stored in the profile.
 - **Admin cancel / user cancel** — reservations cannot be cancelled after creation; adding `ReservationStatus` cascades into the overlap-check and reports (see backlog notes).
 - **Room-services editing** — the room ↔ service join table is populated only by the seeder; admin UI does not currently let you edit the amenity list per room after creation.
 ## License
