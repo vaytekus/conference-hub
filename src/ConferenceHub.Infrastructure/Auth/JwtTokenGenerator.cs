@@ -7,7 +7,7 @@ using ConferenceHub.Domain.Entities;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
-namespace ConferenceHub.Infrastructure.Services;
+namespace ConferenceHub.Infrastructure.Auth;
 
 public class JwtTokenGenerator(IOptions<JwtSettings> settings) : IJwtTokenGenerator
 {

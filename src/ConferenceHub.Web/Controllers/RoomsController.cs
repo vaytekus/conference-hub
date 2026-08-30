@@ -18,7 +18,14 @@ public class RoomsController(IRoomService rooms) : Controller
         }
 
         var filter = new RoomSearchDto(model.MinCapacity, model.StartTime, model.EndTime);
-        model.Rooms = await rooms.SearchAsync(filter, ct);
+        var allRooms = await rooms.SearchAsync(filter, ct);
+
+        model.TotalCount = allRooms.Count;
+        model.Rooms = allRooms
+            .Skip((model.Page - 1) * model.GetPageSize())
+            .Take(model.GetPageSize())
+            .ToList();
+
         return View(model);
     }
 

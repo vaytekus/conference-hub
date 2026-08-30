@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.DTOs.Services;
 using ConferenceHub.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -22,7 +23,7 @@ public class ServicesController(ICatalogService catalog) : ControllerBase
         return service is null ? NotFound() : Ok(service);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     public async Task<ActionResult<ServiceDto>> Create(CreateServiceDto dto, CancellationToken ct)
     {
@@ -30,14 +31,14 @@ public class ServicesController(ICatalogService catalog) : ControllerBase
         return  CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateServiceDto dto, CancellationToken ct)
     {
         return await catalog.UpdateAsync(id, dto, ct) ? NoContent() : NotFound();
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {

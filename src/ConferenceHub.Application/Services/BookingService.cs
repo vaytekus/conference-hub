@@ -15,24 +15,14 @@ public class BookingService(
     IRepository<Service> serviceRepo,
     IUnitOfWork uow,
     IPricingCalculator pricingCalculator,
-    ICurrentUser currentUser) : IBookingService
+    ICurrentUser currentUser,
+    IRetryPolicy retryPolicy) : IBookingService
 {
     private const int MaxAttempts = 3;
+    private const int RetryBackoffMillisPerAttempt = 50;
 
-    public async Task<ReservationDto> CreateAsync(CreateReservationDto dto, CancellationToken ct = default)
-    {
-        for (var attempt = 1; ; attempt++)
-        {
-            try
-            {
-                return await CreateReservationCoreAsync(dto, ct);
-            }
-            catch (Exception ex) when (IsSerializationFailure(ex) && attempt < MaxAttempts)
-            {
-                await Task.Delay(TimeSpan.FromMilliseconds(50 * attempt), ct);
-            }
-        }
-    }
+    public Task<ReservationDto> CreateAsync(CreateReservationDto dto, CancellationToken ct = default)
+        => retryPolicy.ExecuteAsync(c => CreateReservationCoreAsync(dto, c), ct);
 
     public async Task<IReadOnlyList<ReservationDto>> GetMyReservationsAsync(CancellationToken ct = default)
     {

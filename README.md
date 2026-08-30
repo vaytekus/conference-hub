@@ -164,21 +164,27 @@ Validation errors return **400 ProblemDetails** (via `ValidationExceptionHandler
 ## Testing
 
 ```bash
-dotnet test
+# Unit tests (no Docker required)
+dotnet test tests/ConferenceHub.Tests
+
+# Integration tests (requires Docker — Testcontainers spins up Postgres automatically)
+dotnet test tests/ConferenceHub.IntegrationTests
+
+# All tests
+dotnet test src/ConferenceHub.sln
 ```
 
 Coverage focuses on business-critical paths:
 - **PricingCalculatorTests** — time-band pricing, cross-band bookings, boundary hours
 - **BookingServiceTests** — overlap detection, boundary touches, price snapshot, service validation
 - **ReportServiceTests** — utilization percent, revenue aggregation, out-of-period exclusion, service grouping
+- **BookingServiceIntegrationTests** — concurrent booking race condition (Serializable isolation), boundary touch, overlapping slot against a real Postgres 17 instance
 
 ## Known Limitations / Backlog
 
 - **Timezone handling** — currently all timestamps are treated as UTC end-to-end (no per-user timezone). Adequate for a single-region deployment; a production system should convert at the boundary using `TimeZoneInfo`.
 - **Admin cancel / user cancel** — reservations cannot be cancelled after creation; adding `ReservationStatus` cascades into the overlap-check and reports (see backlog notes).
 - **Room-services editing** — the room ↔ service join table is populated only by the seeder; admin UI does not currently let you edit the amenity list per room after creation.
-- **Integration tests** — Testcontainers-based tests for the Serializable transaction retry path would strengthen the pricing and booking coverage; unit tests can't reproduce real `serialization_failure`.
-
 ## License
 
 Test task — not licensed for redistribution.

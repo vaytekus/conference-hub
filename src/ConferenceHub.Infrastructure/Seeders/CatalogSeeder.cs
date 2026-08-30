@@ -75,7 +75,7 @@ public static class CatalogSeeder
             var picked = picker.PickRandom(services, picker.Random.Int(1, 4)).ToList();
             foreach (var svc in picked)
             {
-                room.RoomServices.Add(new RoomService { ServiceId = svc.Id });
+                room.RoomAmenities.Add(new RoomAmenity { ServiceId = svc.Id });
             }
         }
 

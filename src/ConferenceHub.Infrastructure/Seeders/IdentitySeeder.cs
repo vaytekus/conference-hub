@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Domain.Entities;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
@@ -7,16 +8,15 @@ namespace ConferenceHub.Infrastructure.Seeders;
 
 public static class IdentitySeeder
 {
-    private const string AdminRole = "Admin";
-    private const string UserRole = "User";
 
     public static async Task SeedAsync(IServiceProvider service)
     {
+        ArgumentNullException.ThrowIfNull(service);
         var roleManager = service.GetRequiredService<RoleManager<IdentityRole<Guid>>>();
         var userManager = service.GetRequiredService<UserManager<AppUser>>();
         var configuration = service.GetRequiredService<IConfiguration>();
 
-        foreach (var role in new[]{AdminRole, UserRole})
+        foreach (var role in new[]{Roles.Admin, Roles.User})
         {
             if (!await roleManager.RoleExistsAsync(role))
             {
@@ -45,9 +45,9 @@ public static class IdentitySeeder
             }
         }
 
-        if (!await userManager.IsInRoleAsync(admin, AdminRole))
+        if (!await userManager.IsInRoleAsync(admin, Roles.Admin))
         {
-            await userManager.AddToRoleAsync(admin, AdminRole);
+            await userManager.AddToRoleAsync(admin, Roles.Admin);
         }
     }
 }

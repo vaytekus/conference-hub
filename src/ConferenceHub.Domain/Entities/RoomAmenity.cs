@@ -1,6 +1,6 @@
 namespace ConferenceHub.Domain.Entities;
 
-public class RoomService
+public class RoomAmenity
 {
     public Guid RoomId { get; set; }
     public Room Room { get; set; } = null!;

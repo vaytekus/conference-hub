@@ -13,7 +13,7 @@ public class AppDbContext : IdentityDbContext<AppUser, IdentityRole<Guid>, Guid>
 
     public DbSet<Room> Rooms => Set<Room>();
     public DbSet<Service> Services => Set<Service>();
-    public DbSet<RoomService> RoomServices => Set<RoomService>();
+    public DbSet<RoomAmenity> RoomServices => Set<RoomAmenity>();
     public DbSet<Reservation> Reservations => Set<Reservation>();
     public DbSet<ReservationService> ReservationServices => Set<ReservationService>();
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();

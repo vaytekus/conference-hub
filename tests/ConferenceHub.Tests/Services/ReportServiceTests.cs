@@ -79,7 +79,6 @@ public class ReportServiceTests
     [Fact]
     public async Task GetUtilizationAsync_ExcludesReservationsOutsidePeriod()
     {
-        // Period: Sept 1-3. Reservation on Sept 5 must be excluded.
         var outsideReservation = NewReservation(
             _roomAId,
             new DateTime(2026, 9, 5, 10, 0, 0, DateTimeKind.Utc),
@@ -97,7 +96,6 @@ public class ReportServiceTests
     [Fact]
     public async Task GetUtilizationAsync_ComputesPercentAgainstOperatingHours()
     {
-        // Period: 2 days → 34 available hours. Booking full day 1 (17h) → 50%.
         _reservationRepo.Query().Returns(new List<Reservation>
         {
             NewReservation(_roomAId, Hour(1, 6), Hour(1, 23))
@@ -116,7 +114,6 @@ public class ReportServiceTests
     [Fact]
     public async Task GetUtilizationAsync_MultiDayReservation_ExcludesNighttimeHours()
     {
-        // Резервація day1 20:00 → day2 09:00 — 13 wall-clock, але 6 білабельних (3 Evening + 3 Morning).
         _reservationRepo.Query().Returns(new List<Reservation>
         {
             NewReservation(_roomAId, Hour(1, 20), Hour(2, 9))
@@ -131,8 +128,6 @@ public class ReportServiceTests
     [Fact]
     public async Task GetUtilizationAsync_ReservationClippedToPeriod()
     {
-        // Резервація Sept 1 10:00 → Sept 3 14:00. Період Sept 2 → 2 повних дні clip'у.
-        // Clipped range: Sept 2 00:00 → Sept 3 00:00 → billable = 17h (6..23).
         _reservationRepo.Query().Returns(new List<Reservation>
         {
             NewReservation(_roomAId, Hour(1, 10), Hour(3, 14))
@@ -232,7 +227,6 @@ public class ReportServiceTests
     [Fact]
     public async Task GetRevenueAsync_IncludesReservationStartingBeforePeriodButOverlapping()
     {
-        // Стара реалізація пропускала резервацію що почалась до `from` — тепер overlap-фільтр включає її.
         var overlapping = NewReservation(
             _roomAId,
             new DateTime(2026, 8, 31, 20, 0, 0, DateTimeKind.Utc),

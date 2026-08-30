@@ -19,6 +19,12 @@ public class RoomsIndexViewModel : IValidatableObject
 
     public IReadOnlyList<RoomDto> Rooms { get; set; } = [];
 
+    public int Page { get; set; } = 1;
+    public int TotalCount { get; set; }
+    public int TotalPages => (int)Math.Ceiling((double)TotalCount / PageSize);
+    private const int PageSize = 6;
+    public int GetPageSize() => PageSize;
+
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (StartTime.HasValue != EndTime.HasValue)

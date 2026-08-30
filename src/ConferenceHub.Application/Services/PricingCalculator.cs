@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.Interfaces;
 using ConferenceHub.Domain.Enums;
 
@@ -5,8 +6,6 @@ namespace ConferenceHub.Application.Services;
 
 public class PricingCalculator : IPricingCalculator
 {
-    private const int OpeningHour = 6;
-    private const int ClosingHour = 23;
 
     public decimal Calculate(
         decimal pricePerHour,
@@ -48,23 +47,22 @@ public class PricingCalculator : IPricingCalculator
 
     private static void EnsureWholeHour(DateTime start, DateTime end)
     {
-        if (!IsWholeHour(start) || !IsWholeHour(end))
+        if (!BookingConstants.IsWholeHour(start) || !BookingConstants.IsWholeHour(end))
         {
             throw new ArgumentException("Booking must start and end on whole hours.");
         }
-    }
-
-    private static bool IsWholeHour(DateTime dateTime)
-    {
-        return dateTime.Minute == 0 && dateTime.Second == 0 && dateTime.Millisecond == 0;
     }
 
     private static IEnumerable<int> EnumerateBillableHours(DateTime start, DateTime end)
     {
         for (var cursor = start; cursor < end; cursor = cursor.AddHours(1))
         {
-            if (cursor.Hour < OpeningHour || cursor.Hour >= ClosingHour) continue;
-           yield return cursor.Hour;
+            if (cursor.Hour < BookingConstants.OpeningHour || cursor.Hour >= BookingConstants.ClosingHour)
+            {
+                continue;
+            }
+
+            yield return cursor.Hour;
         }
     }
 }

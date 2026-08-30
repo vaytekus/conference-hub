@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.DTOs.Rooms;
 using ConferenceHub.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +25,7 @@ public class RoomsController(IRoomService rooms): ControllerBase
         return room is null ? NotFound() : Ok(room);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpPost]
     public async Task<ActionResult<RoomDto>> Create(CreateRoomDto room, CancellationToken ct)
     {
@@ -32,14 +33,14 @@ public class RoomsController(IRoomService rooms): ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpPut("{id:guid}")]
     public async Task<IActionResult> Update(Guid id, UpdateRoomDto room, CancellationToken ct)
     {
         return await rooms.UpdateAsync(id, room, ct) ? NoContent() : NotFound();
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {

@@ -6,7 +6,7 @@ namespace ConferenceHub.Infrastructure.Repositories;
 
 public class Repository<T>(AppDbContext db) : IRepository<T> where T : class
 {
-    private readonly DbSet<T> _set = db.Set<T>();
+    private readonly DbSet<T> _set = (db ?? throw new ArgumentNullException(nameof(db))).Set<T>();
 
     public Task<T?> GetByIdAsync(Guid id, CancellationToken ct = default)
         => _set.FindAsync([id], ct).AsTask();

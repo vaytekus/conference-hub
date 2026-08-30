@@ -11,6 +11,7 @@ public class ReportService(
     IPricingCalculator pricingCalculator) : IReportService
 {
     private const int OperationHoursPerDay = 17;
+    private const int EndDateExclusiveDayOffset = 1;
 
     public async Task<IReadOnlyList<RoomUtilizationDto>> GetUtilizationAsync(
         PeriodQueryDto query,
@@ -100,7 +101,7 @@ public class ReportService(
     private static (DateTime FromUtc, DateTime ToUtc, decimal PeriodDays) NormalizePeriod(PeriodQueryDto query)
     {
         var fromUtc = query.StartDate.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        var toUtc = query.EndDate.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        var toUtc = query.EndDate.AddDays(EndDateExclusiveDayOffset).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         var periodDays = (decimal)(toUtc - fromUtc).TotalDays;
         return (fromUtc, toUtc, periodDays);
     }
@@ -109,7 +110,11 @@ public class ReportService(
     {
         var start = resStart > periodFrom ? resStart : periodFrom;
         var end = resEnd < periodTo ? resEnd : periodTo;
-        if (start >= end) return 0;
+        if (start >= end)
+        {
+            return 0;
+        }
+
         return pricingCalculator.CountBillableHours(start, end);
     }
 

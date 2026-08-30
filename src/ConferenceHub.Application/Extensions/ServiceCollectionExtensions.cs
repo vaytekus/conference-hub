@@ -15,6 +15,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBookingService, BookingService>();
         services.AddScoped<ICatalogService, CatalogService>();
         services.AddScoped<IReportService, ReportService>();
+        services.AddScoped<IRetryPolicy, SerializationRetryPolicy>();
 
         services.AddSingleton<IPricingCalculator, PricingCalculator>();
 

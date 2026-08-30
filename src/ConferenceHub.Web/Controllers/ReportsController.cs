@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.DTOs.Reports;
 using ConferenceHub.Application.Interfaces;
 using ConferenceHub.Web.ViewModels;
@@ -6,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ConferenceHub.Web.Controllers;
 
-[Authorize(Roles = "Admin")]
+[Authorize(Roles = Roles.Admin)]
 public class ReportsController(IReportService reports) : Controller
 {
     [HttpGet]

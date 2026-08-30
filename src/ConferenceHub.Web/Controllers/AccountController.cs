@@ -34,7 +34,7 @@ public class AccountController(
 
         var result = await userManager.CreateAsync(user, model.Password);
 
-        if(result.Succeeded)
+        if (result.Succeeded)
         {
             await signInManager.SignInAsync(user, false);
             return RedirectToAction("Index", "Home");

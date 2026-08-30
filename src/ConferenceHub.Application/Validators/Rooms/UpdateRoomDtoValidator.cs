@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.DTOs.Rooms;
 using FluentValidation;
 
@@ -9,11 +10,11 @@ public class UpdateRoomDtoValidator : AbstractValidator<UpdateRoomDto>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required")
-            .MaximumLength(200).WithMessage("Room name must be 200 characters or fewer.");
+            .MaximumLength(RoomValidationConstants.MaxNameLength).WithMessage($"Room name must be {RoomValidationConstants.MaxNameLength} characters or fewer.");
 
         RuleFor(x => x.Capacity)
             .GreaterThan(0).WithMessage("Capacity must be greater than 0.")
-            .LessThanOrEqualTo(1000).WithMessage("Capacity must be 1000 or fewer.");
+            .LessThanOrEqualTo(RoomValidationConstants.MaxCapacity).WithMessage($"Capacity must be {RoomValidationConstants.MaxCapacity} or fewer.");
 
         RuleFor(x => x.PricePerHour)
             .GreaterThan(0).WithMessage("Price per hour must be greater than 0.");

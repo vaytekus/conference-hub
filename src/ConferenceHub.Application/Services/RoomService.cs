@@ -60,6 +60,8 @@ public class RoomService(
 
     public async Task<IReadOnlyList<RoomDto>> SearchAsync(RoomSearchDto filter, CancellationToken ct = default)
     {
+        ArgumentNullException.ThrowIfNull(filter);
+
         if (filter.StartTime.HasValue != filter.EndTime.HasValue)
         {
             return [];
@@ -100,7 +102,7 @@ public class RoomService(
     {
         var room = await repository.Query()
             .AsNoTracking()
-            .Include(r => r.RoomServices).ThenInclude(rs => rs.Service)
+            .Include(r => r.RoomAmenities).ThenInclude(rs => rs.Service)
             .FirstOrDefaultAsync(r => r.Id == id, ct);
 
         if (room is null)
@@ -108,7 +110,7 @@ public class RoomService(
             return null;
         }
 
-        var services = room.RoomServices
+        var services = room.RoomAmenities
             .Select(rs => new ServiceDto(rs.Service.Id, rs.Service.Name, rs.Service.Price))
             .ToList();
 

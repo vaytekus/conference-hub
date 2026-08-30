@@ -7,6 +7,6 @@ public class Service
     public required decimal Price { get; set; }
     public bool IsDeleted { get; set; }
 
-    public ICollection<RoomService> RoomServices { get; set; } = [];
+    public ICollection<RoomAmenity> RoomAmenities { get; set; } = [];
     public ICollection<ReservationService> ReservationServices { get; set; } = [];
 }

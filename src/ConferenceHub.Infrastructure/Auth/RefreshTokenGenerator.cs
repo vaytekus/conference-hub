@@ -3,7 +3,7 @@ using ConferenceHub.Application.Interfaces;
 using ConferenceHub.Application.Options;
 using Microsoft.Extensions.Options;
 
-namespace ConferenceHub.Infrastructure.Services;
+namespace ConferenceHub.Infrastructure.Auth;
 
 public class RefreshTokenGenerator(IOptions<RefreshTokenSettings> settings) : IRefreshTokenGenerator
 {

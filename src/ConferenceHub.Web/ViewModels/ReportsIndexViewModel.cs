@@ -4,7 +4,9 @@ namespace ConferenceHub.Web.ViewModels;
 
 public class ReportsIndexViewModel
 {
-    public  DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-30);
+    private const int DefaultPeriodDays = 30;
+
+    public DateOnly StartDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow).AddDays(-DefaultPeriodDays);
     public DateOnly EndDate { get; set; } = DateOnly.FromDateTime(DateTime.UtcNow);
 
     public IReadOnlyList<RoomUtilizationDto>? Utilization { get; set; }

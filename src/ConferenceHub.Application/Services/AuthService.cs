@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.DTOs.Auth;
 using ConferenceHub.Application.Exceptions;
 using ConferenceHub.Application.Interfaces;
@@ -18,6 +19,10 @@ public class AuthService(
     IOptions<JwtSettings> jwtSettings,
     IOptions<RefreshTokenSettings> refreshTokenSettings) : IAuthService
 {
+    private const string ReasonReuseDetected = "Reuse detected — token family compromised";
+    private const string ReasonRotated = "Rotated";
+    private const string ReasonLogout = "Logout";
+
     private readonly JwtSettings _jwtSettings = jwtSettings.Value;
     private readonly RefreshTokenSettings _refreshTokenSettings = refreshTokenSettings.Value;
 
@@ -34,7 +39,7 @@ public class AuthService(
             throw new ValidationException(result.Errors.Select(x => x.Description));
         }
 
-        await userManager.AddToRoleAsync(user, "User");
+        await userManager.AddToRoleAsync(user, Roles.User);
         return await IssueTokensAsync(user, ct);
     }
 
@@ -68,7 +73,7 @@ public class AuthService(
 
         if (stored.IsRevoked)
         {
-            await RevokeAllUserTokensAsync(stored.UserId, "Reuse detected — token family compromised", ct);
+            await RevokeAllUserTokensAsync(stored.UserId, ReasonReuseDetected, ct);
             return null;
         }
 
@@ -81,7 +86,7 @@ public class AuthService(
 
         stored.RevokedAt = DateTime.UtcNow;
         stored.ReplacedByToken = newRefresh.Token;
-        stored.ReasonRevoked = "Rotated";
+        stored.ReasonRevoked = ReasonRotated;
         refreshRepo.Update(stored);
 
         await uow.SaveChangesAsync(ct);
@@ -99,7 +104,7 @@ public class AuthService(
         }
 
         stored.RevokedAt = DateTime.UtcNow;
-        stored.ReasonRevoked = "Logout";
+        stored.ReasonRevoked = ReasonLogout;
         refreshRepo.Update(stored);
         await uow.SaveChangesAsync(ct);
 

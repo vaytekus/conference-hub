@@ -14,7 +14,7 @@ public static class ServiceMappings
     public static Service ToEntity(this CreateServiceDto dto)
     {
         ArgumentNullException.ThrowIfNull(dto);
-        return new Service{Name = dto.Name, Price = dto.Price};
+        return new Service { Name = dto.Name, Price = dto.Price };
     }
 
     public static void ApplyTo(this UpdateServiceDto dto, Service service)

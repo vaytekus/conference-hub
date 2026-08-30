@@ -1,3 +1,4 @@
+using ConferenceHub.Application.Common;
 using ConferenceHub.Application.DTOs.Reservations;
 using ConferenceHub.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +31,7 @@ public class ReservationsController(IBookingService bookings) : ControllerBase
         return Ok(await bookings.GetMyReservationsAsync(ct));
     }
 
-    [Authorize(Roles = "Admin")]
+    [Authorize(Roles = Roles.Admin)]
     [HttpGet]
     public async Task<ActionResult<IReadOnlyList<ReservationDto>>> GetAll(CancellationToken ct)
     {

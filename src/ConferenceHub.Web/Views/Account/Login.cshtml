@@ -19,7 +19,10 @@
 
             <div class="form-group mb-3">
                 <label asp-for="Password" class="form-label"></label>
-                <input asp-for="Password" class="form-control"/>
+                <div class="input-group">
+                    <input asp-for="Password" class="form-control"/>
+                    <button class="btn btn-outline-secondary" type="button" data-toggle-password><i class="bi bi-eye"></i></button>
+                </div>
                 <span asp-validation-for="Password" class="text-danger"></span>
             </div>
 

@@ -1,9 +1,9 @@
 using ConferenceHub.Application.Interfaces;
 using ConferenceHub.Application.Options;
 using ConferenceHub.Domain.Entities;
+using ConferenceHub.Infrastructure.Auth;
 using ConferenceHub.Infrastructure.Data;
 using ConferenceHub.Infrastructure.Repositories;
-using ConferenceHub.Infrastructure.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

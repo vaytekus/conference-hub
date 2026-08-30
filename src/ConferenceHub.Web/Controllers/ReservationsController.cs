@@ -89,7 +89,11 @@ public class ReservationsController(
         }
         catch (NotFoundException ex)
         {
-            return NotFound(new {error = ex.Message});
+            return NotFound(new { error = ex.Message });
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(new { error = ex.Message });
         }
     }
 

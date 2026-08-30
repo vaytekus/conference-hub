@@ -211,7 +211,7 @@ namespace ConferenceHub.Infrastructure.Migrations
                     b.ToTable("Rooms");
                 });
 
-            modelBuilder.Entity("ConferenceHub.Domain.Entities.RoomService", b =>
+            modelBuilder.Entity("ConferenceHub.Domain.Entities.RoomAmenity", b =>
                 {
                     b.Property<Guid>("RoomId")
                         .HasColumnType("uuid");
@@ -429,16 +429,16 @@ namespace ConferenceHub.Infrastructure.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("ConferenceHub.Domain.Entities.RoomService", b =>
+            modelBuilder.Entity("ConferenceHub.Domain.Entities.RoomAmenity", b =>
                 {
                     b.HasOne("ConferenceHub.Domain.Entities.Room", "Room")
-                        .WithMany("RoomServices")
+                        .WithMany("RoomAmenities")
                         .HasForeignKey("RoomId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ConferenceHub.Domain.Entities.Service", "Service")
-                        .WithMany("RoomServices")
+                        .WithMany("RoomAmenities")
                         .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -515,14 +515,14 @@ namespace ConferenceHub.Infrastructure.Migrations
                 {
                     b.Navigation("Reservations");
 
-                    b.Navigation("RoomServices");
+                    b.Navigation("RoomAmenities");
                 });
 
             modelBuilder.Entity("ConferenceHub.Domain.Entities.Service", b =>
                 {
                     b.Navigation("ReservationServices");
 
-                    b.Navigation("RoomServices");
+                    b.Navigation("RoomAmenities");
                 });
 #pragma warning restore 612, 618
         }
