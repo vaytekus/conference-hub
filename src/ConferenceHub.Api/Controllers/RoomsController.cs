@@ -1,4 +1,5 @@
 using ConferenceHub.Application.Common;
+using ConferenceHub.Application.DTOs.Reservations;
 using ConferenceHub.Application.DTOs.Rooms;
 using ConferenceHub.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
@@ -8,7 +9,7 @@ namespace ConferenceHub.Api.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class RoomsController(IRoomService rooms): ControllerBase
+public class RoomsController(IRoomService rooms, IBookingService booking): ControllerBase
 {
     /// <summary>Get all rooms.</summary>
     /// <returns>List of active (non-deleted) rooms.</returns>
@@ -45,5 +46,15 @@ public class RoomsController(IRoomService rooms): ControllerBase
     public async Task<IActionResult> Delete(Guid id, CancellationToken ct)
     {
         return await rooms.DeleteAsync(id, ct) ? NoContent() : NotFound();
+    }
+
+    [HttpGet("{id:guid}/availability")]
+    public async Task<ActionResult<IReadOnlyList<RoomSlotDto>>> GetAvailability(
+        Guid id, [FromQuery] DateOnly? date, [FromQuery] DateOnly? dateTo, CancellationToken ct)
+    {
+        var from = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var to = dateTo ?? from;
+        if (to < from) to = from;
+        return Ok(await booking.GetRoomAvailabilityAsync(id, from, to, ct));
     }
 }

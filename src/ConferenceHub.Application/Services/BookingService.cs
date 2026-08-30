@@ -5,7 +5,6 @@ using ConferenceHub.Application.Interfaces;
 using ConferenceHub.Application.Mappings;
 using ConferenceHub.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
 
 namespace ConferenceHub.Application.Services;
 
@@ -16,11 +15,9 @@ public class BookingService(
     IUnitOfWork uow,
     IPricingCalculator pricingCalculator,
     ICurrentUser currentUser,
-    IRetryPolicy retryPolicy) : IBookingService
+    IRetryPolicy retryPolicy,
+    ITimeZoneProvider timeZoneProvider) : IBookingService
 {
-    private const int MaxAttempts = 3;
-    private const int RetryBackoffMillisPerAttempt = 50;
-
     public Task<ReservationDto> CreateAsync(CreateReservationDto dto, CancellationToken ct = default)
         => retryPolicy.ExecuteAsync(c => CreateReservationCoreAsync(dto, c), ct);
 
@@ -35,7 +32,9 @@ public class BookingService(
             .OrderByDescending(r => r.StartTime)
             .ToListAsync(ct);
 
-        return reservations.Select(r => r.ToDto()).ToList();
+        var tz = timeZoneProvider.Get();
+
+        return reservations.Select(r => ToLocalDto(r, tz)).ToList();
     }
 
     public async Task<IReadOnlyList<ReservationDto>> GetAllAsync(CancellationToken ct = default)
@@ -48,7 +47,9 @@ public class BookingService(
             .OrderByDescending(r => r.StartTime)
             .ToListAsync(ct);
 
-        return reservations.Select(r => r.ToDto()).ToList();
+        var tz = timeZoneProvider.Get();
+
+        return reservations.Select(r => ToLocalDto(r, tz)).ToList();
     }
 
     public async Task<ReservationPricePreviewDto> PreviewPriceAsync(
@@ -84,21 +85,42 @@ public class BookingService(
         return new ReservationPricePreviewDto(billableHours, roomTotal, serviceTotal, grandTotal);
     }
 
-    private static bool IsSerializationFailure(Exception ex) => ex switch
+    public async Task<IReadOnlyList<RoomSlotDto>> GetRoomAvailabilityAsync(
+        Guid roomId,
+        DateOnly from,
+        DateOnly to,
+        CancellationToken ct = default)
     {
-        PostgresException pg
-            => pg.SqlState == PostgresErrorCodes.SerializationFailure,
+        var tz = timeZoneProvider.Get();
+        var rangeStartUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(from.ToDateTime(TimeOnly.MinValue), DateTimeKind.Unspecified), tz);
+        var rangeEndUtc = TimeZoneInfo.ConvertTimeToUtc(
+            DateTime.SpecifyKind(to.ToDateTime(TimeOnly.MaxValue), DateTimeKind.Unspecified), tz);
 
-        DbUpdateConcurrencyException { InnerException: PostgresException pg }
-            => pg.SqlState == PostgresErrorCodes.SerializationFailure,
+        var slots = await reservationRepo.Query()
+            .AsNoTracking()
+            .Where(r => r.RoomId == roomId
+                && r.StartTime < rangeEndUtc
+                && r.EndTime > rangeStartUtc)
+            .OrderBy(r => r.StartTime)
+            .Select(r => new { r.StartTime, r.EndTime })
+            .ToListAsync(ct);
 
-        _ => false
-    };
+        return slots
+            .Select(s => new RoomSlotDto(
+                TimeZoneInfo.ConvertTimeFromUtc(s.StartTime, tz),
+                TimeZoneInfo.ConvertTimeFromUtc(s.EndTime, tz)))
+            .ToList();
+    }
 
     private async Task<ReservationDto> CreateReservationCoreAsync(
         CreateReservationDto dto,
         CancellationToken ct = default)
     {
+        var tz = timeZoneProvider.Get();
+        var startUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(dto.StartTime, DateTimeKind.Unspecified), tz);
+        var endUtc = TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(dto.EndTime, DateTimeKind.Unspecified), tz);
+
         await using var transaction = await uow.BeginTransactionAsync(IsolationLevel.Serializable, ct);
 
         var room = await roomRepo.GetByIdAsync(dto.RoomId, ct);
@@ -120,8 +142,8 @@ public class BookingService(
         var hasOverlap = await reservationRepo.Query()
             .AnyAsync(r =>
                 r.RoomId == dto.RoomId &&
-                r.StartTime < dto.EndTime &&
-                r.EndTime > dto.StartTime, ct);
+                r.StartTime < endUtc &&
+                r.EndTime > startUtc, ct);
 
         if (hasOverlap)
         {
@@ -138,8 +160,8 @@ public class BookingService(
         {
             RoomId = dto.RoomId,
             UserId = currentUser.Id,
-            StartTime = dto.StartTime,
-            EndTime = dto.EndTime,
+            StartTime = startUtc,
+            EndTime = endUtc,
             TotalPrice = totalPrice,
             CreatedAt = DateTime.UtcNow,
             ReservationServices = services
@@ -163,10 +185,17 @@ public class BookingService(
             reservation.Id,
             reservation.RoomId,
             room.Name,
-            reservation.StartTime,
-            reservation.EndTime,
+            dto.StartTime,
+            dto.EndTime,
             reservation.TotalPrice,
             reservation.CreatedAt,
             serviceDtos);
     }
+
+    private static ReservationDto ToLocalDto(Reservation r, TimeZoneInfo tz) =>
+        r.ToDto() with
+        {
+            StartTime = TimeZoneInfo.ConvertTimeFromUtc(r.StartTime, tz),
+            EndTime   = TimeZoneInfo.ConvertTimeFromUtc(r.EndTime, tz)
+        };
 }

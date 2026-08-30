@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IRetryPolicy, SerializationRetryPolicy>();
 
         services.AddSingleton<IPricingCalculator, PricingCalculator>();
+        services.AddSingleton<ITimeZoneProvider, TimeZoneProvider>();
 
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 

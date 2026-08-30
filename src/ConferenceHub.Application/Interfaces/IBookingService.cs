@@ -9,4 +9,5 @@ public interface IBookingService
     Task<IReadOnlyList<ReservationDto>> GetAllAsync(CancellationToken ct = default);
 
     Task<ReservationPricePreviewDto> PreviewPriceAsync(PreviewReservationDto dto, CancellationToken ct = default);
+    Task<IReadOnlyList<RoomSlotDto>> GetRoomAvailabilityAsync(Guid roomId, DateOnly from, DateOnly to, CancellationToken ct = default);
 }

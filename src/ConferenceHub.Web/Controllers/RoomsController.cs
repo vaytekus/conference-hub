@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace ConferenceHub.Web.Controllers;
 
 [AllowAnonymous]
-public class RoomsController(IRoomService rooms) : Controller
+public class RoomsController(IRoomService rooms, IBookingService booking) : Controller
 {
     [HttpGet]
     public async Task<IActionResult> Index(RoomsIndexViewModel model, CancellationToken ct)
@@ -30,14 +30,23 @@ public class RoomsController(IRoomService rooms) : Controller
     }
 
     [HttpGet("{id:guid}")]
-    public async Task<IActionResult> Details(Guid id, CancellationToken ct)
+    public async Task<IActionResult> Details(Guid id, DateOnly? date, DateOnly? dateTo, CancellationToken ct)
     {
         var room = await rooms.GetByIdWithServicesAsync(id, ct);
-
         if (room is null)
         {
             return NotFound();
         }
+
+        var from = date ?? DateOnly.FromDateTime(DateTime.Today);
+        var to = dateTo ?? from;
+        if (to < from) to = from;
+
+        var slots = await booking.GetRoomAvailabilityAsync(id, from, to, ct);
+
+        ViewBag.AvailabilityFrom = from;
+        ViewBag.AvailabilityTo = to;
+        ViewBag.BookedSlots = slots;
 
         return View(room);
     }

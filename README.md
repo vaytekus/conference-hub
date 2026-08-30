@@ -46,6 +46,10 @@ Key design decisions:
 - **Operating hours 06:00–23:00** enforced at validation time for booking start/end hours.
 - **Multi-day bookings supported** — a reservation may span multiple days (e.g. day 1 20:00 → day 2 09:00). Nighttime hours (23:00–06:00) are skipped by `PricingCalculator` and excluded from utilization reports. The "billable hours" logic lives in a single iterator (`EnumerateBillableHours`) reused by both pricing and reporting.
 - **Whole-hour bookings only** — enforced via `CreateReservationDtoValidator`.
+- **IRetryPolicy** — retry logic is extracted from `BookingService` into `SerializationRetryPolicy` (SRP); the interface is mocked in unit tests for isolation.
+- **BookingConstants / RoomValidationConstants** — shared constants (opening hours, max capacity, `IsWholeHour`) prevent duplication across validators and `PricingCalculator`.
+- **RoomAmenity** join entity — renamed from `RoomService` to avoid name collision with `Application/Services/RoomService`; migration `RenameRoomServiceToRoomAmenity` applied.
+- **ITimeZoneProvider** — system timezone is configured via `SystemTimeZoneId` in `appsettings.json` (default: `FLE Standard Time` = Kyiv UTC+2/+3). Input times (local) are converted to UTC before storage; UTC is converted back to local on read. Validators and `PricingCalculator` always receive local times so business-hours checks (06:00–23:00) remain correct.
 - **Data Protection API** — default file-system key persistence in development; production deployments should configure a shared key store (Redis / file share / Azure Key Vault) for multi-instance auth.
 
 ## Getting Started
@@ -132,6 +136,7 @@ POST /api/auth/logout    { refreshToken }                      → 204
 |--------|-------------------------------|------------|---------------------------------|
 | GET    | `/api/rooms`                  | anonymous  | List rooms + search filter      |
 | GET    | `/api/rooms/{id}`             | anonymous  | Room details + amenities        |
+| GET    | `/api/rooms/{id}/availability`| anonymous  | Booked slots for a date range (`?date=2026-09-01&dateTo=2026-09-07`) |
 | POST   | `/api/rooms`                  | Admin      | Create room                     |
 | PUT    | `/api/rooms/{id}`             | Admin      | Update room                     |
 | DELETE | `/api/rooms/{id}`             | Admin      | Soft-delete room                |
@@ -153,7 +158,7 @@ Validation errors return **400 ProblemDetails** (via `ValidationExceptionHandler
 | `/account/login`     | anonymous  | Login                              |
 | `/account/register`  | anonymous  | Register                           |
 | `/rooms`             | anonymous  | Browse + filter rooms              |
-| `/rooms/details/{id}`| anonymous  | Room details                       |
+| `/rooms/details/{id}`| anonymous  | Room details + booked slots by date range |
 | `/reservations/book/{roomId}` | User | Book a room (live price preview + billable hours) |
 | `/reservations/mine` | User       | My reservations                    |
 | `/admin`             | Admin      | Admin hub (Reports / Rooms / Services) |
@@ -174,15 +179,20 @@ dotnet test tests/ConferenceHub.IntegrationTests
 dotnet test src/ConferenceHub.sln
 ```
 
+**59 tests total — 56 unit, 3 integration.**
+
 Coverage focuses on business-critical paths:
 - **PricingCalculatorTests** — time-band pricing, cross-band bookings, boundary hours
-- **BookingServiceTests** — overlap detection, boundary touches, price snapshot, service validation
+- **BookingServiceTests** — overlap detection, boundary touches, price snapshot, service validation, retry policy passthrough (8 tests)
 - **ReportServiceTests** — utilization percent, revenue aggregation, out-of-period exclusion, service grouping
-- **BookingServiceIntegrationTests** — concurrent booking race condition (Serializable isolation), boundary touch, overlapping slot against a real Postgres 17 instance
+- **BookingServiceIntegrationTests** — real Postgres 17 via Testcontainers:
+  - concurrent booking race condition resolved by Serializable isolation + `SerializationRetryPolicy` (3 attempts, 50 ms × attempt backoff)
+  - boundary touch: `[10:00, 12:00)` does not conflict with `[12:00, 14:00)`
+  - overlapping slot returns 409 ConflictException
 
 ## Known Limitations / Backlog
 
-- **Timezone handling** — currently all timestamps are treated as UTC end-to-end (no per-user timezone). Adequate for a single-region deployment; a production system should convert at the boundary using `TimeZoneInfo`.
+- **Timezone handling** — system timezone is fixed to one configured value (`SystemTimeZoneId`). Adequate for a single-location deployment; a multi-region system would need per-user timezone stored in the profile.
 - **Admin cancel / user cancel** — reservations cannot be cancelled after creation; adding `ReservationStatus` cascades into the overlap-check and reports (see backlog notes).
 - **Room-services editing** — the room ↔ service join table is populated only by the seeder; admin UI does not currently let you edit the amenity list per room after creation.
 ## License

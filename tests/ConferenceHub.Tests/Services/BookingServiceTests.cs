@@ -20,6 +20,7 @@ public class BookingServiceTests
     private readonly IPricingCalculator _pricingCalculator = Substitute.For<IPricingCalculator>();
     private readonly ICurrentUser _currentUser = Substitute.For<ICurrentUser>();
     private readonly IRetryPolicy _retryPolicy = Substitute.For<IRetryPolicy>();
+    private readonly ITimeZoneProvider _timeZoneProvider = Substitute.For<ITimeZoneProvider>();
     private readonly IDbContextTransaction _transaction = Substitute.For<IDbContextTransaction>();
 
     private readonly Guid _userId = Guid.NewGuid();
@@ -39,9 +40,11 @@ public class BookingServiceTests
             .ExecuteAsync(Arg.Any<Func<CancellationToken, Task<ReservationDto>>>(), Arg.Any<CancellationToken>())
             .Returns(ci => ci.Arg<Func<CancellationToken, Task<ReservationDto>>>()(ci.Arg<CancellationToken>()));
 
+        _timeZoneProvider.Get().Returns(TimeZoneInfo.Utc);
+
         _sut = new BookingService(
             _reservationRepo, _roomRepo, _serviceRepo,
-            _uow, _pricingCalculator, _currentUser, _retryPolicy);
+            _uow, _pricingCalculator, _currentUser, _retryPolicy, _timeZoneProvider);
     }
 
     [Fact]

@@ -22,10 +22,11 @@ public abstract class IntegrationTestBase(PostgreSqlFixture fixture)
         var calculator = new PricingCalculator();
         var currentUser = new TestCurrentUser(TestUserId);
         var retryPolicy = new SerializationRetryPolicy();
+        var timeZoneProvider = new TestTimeZoneProvider();
 
         return new BookingService(
             reservationRepo, roomRepo, serviceRepo,
-            uow, calculator, currentUser, retryPolicy);
+            uow, calculator, currentUser, retryPolicy, timeZoneProvider);
     }
 
     protected async Task<Room> SeedRoomAsync(AppDbContext db, decimal pricePerHour = 1000m)
@@ -71,4 +72,9 @@ public abstract class IntegrationTestBase(PostgreSqlFixture fixture)
 public class TestCurrentUser(Guid userId) : ICurrentUser
 {
     public Guid Id => userId;
+}
+
+public class TestTimeZoneProvider : ITimeZoneProvider
+{
+    public TimeZoneInfo Get() => TimeZoneInfo.Utc;
 }
