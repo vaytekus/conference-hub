@@ -35,7 +35,8 @@ src/
 ├── ConferenceHub.Api             — REST controllers, JWT auth, Swagger
 └── ConferenceHub.Web             — MVC controllers, views, cookie auth
 tests/
-└── ConferenceHub.Tests           — xUnit tests for pricing, booking, reports
+├── ConferenceHub.Tests           — xUnit unit tests for pricing, booking, reports
+└── ConferenceHub.IntegrationTests — integration tests against real Postgres via Testcontainers
 ```
 
 Key design decisions:
